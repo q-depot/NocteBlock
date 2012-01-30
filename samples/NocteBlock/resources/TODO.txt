@@ -1,0 +1,15 @@
+/*
+
+- Scene
+- Dmx
+- Midi
+- Osc
+- Params?
+- Parallel machines
+- XmlSettings
+- XmlColorScheme
+- Logger
+- Timeline
+- Dynamic loading modules
+
+*/
