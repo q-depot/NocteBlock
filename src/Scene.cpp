@@ -1,5 +1,5 @@
 /*
- *  Scene.cpp
+ *  Scene.h
  *	NocteBlock
  *
  *  Created by Andrea Cuius on 25/01/2011.
@@ -8,254 +8,218 @@
  *
  */
 
-#include "Scene.h"
-
-#include "cinder/app/App.h"
+#include "cinder/App/App.h"
 #include "cinder/ObjLoader.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <fstream>
+
+#include "Scene.h"
+
+#include "Resources.h"
 
 
 using namespace ci;
 using namespace ci::app;
 using namespace std;
 
+
 namespace nocte {
 	
-	class Fixture {
-		
-	public:
-		
-		Fixture(Vec3f pos) : mPos(pos) 
-		{
-		};
-		
-		void update() 
-		{
-		};
-
-		void draw() 
-		{
-			gl::color( Color::white() );
-			gl::drawSphere( mPos, 0.5f );
-		};
-		
-		Vec3f getPos() { return mPos; };
-		
-	private:
-		
-		Vec3f mPos;
-		
-	};
-	
-	Scene::Scene( App *app, string filename ) : mApp(app), mFilename(filename)
-	{
-		if ( mApp != NULL )
-		{
-			mCbMouseDown	= mApp->registerMouseDown( this, &Scene::mouseDown );
-			mCbMouseUp		= mApp->registerMouseUp( this, &Scene::mouseUp );
-			mCbMouseDrag	= mApp->registerMouseDrag( this, &Scene::mouseDrag );	
-			mCbMouseMove	= mApp->registerMouseMove( this, &Scene::mouseMove );
-//			mCbKeyDown		= mApp->registerKeyDown( this, &Scene::keyDown );
-		}
-		
-		if ( mFilename != "" )
-			loadCSVFile( filename );
-		
-		CameraPersp initialCam;
-		initialCam.setPerspective( 45.0f, getWindowAspectRatio(), 0.1, 1000 );
-		mMayaCam	= new MayaCamUI( initialCam );
-		mIsEditable = true;
-		mVboMesh	= NULL;
-	}
-
-
-	void Scene::update()
-	{
-		for(int k=0; k < mFixtures.size(); k++)
-			mFixtures[k]->update();
-	}
-
-
-	void Scene::draw()
-	{
-		gl::pushMatrices();
-		gl::setMatrices( mMayaCam->getCamera() );
-		
-		drawGrid();
-		
-		for(int k=0; k < mFixtures.size(); k++)
-			mFixtures[k]->draw();
-		
-		gl::popMatrices();
-		
-		gl::color( Color::white() );
-	}
-
-
-	bool Scene::mouseDown( MouseEvent event )
-	{
-		if ( !mIsEditable )
-			return false;
-		
-		if( event.isAltDown() )
-			mMayaCam->mouseDown( event.getPos() );
-
-		return false;
-	}
-
-	bool Scene::mouseUp( MouseEvent event )
-	{
-		if ( !mIsEditable )
-			return false;
-		
-		return false;
-	}
-
-
-	bool Scene::mouseDrag( MouseEvent event )
-	{
-		if ( !mIsEditable )
-			return false;
-		
-		if( event.isAltDown() )
-			mMayaCam->mouseDrag( event.getPos(), event.isLeftDown(), event.isMiddleDown(), event.isRightDown() );
-		
-		return false;
-	}
-
-	bool Scene::mouseMove( MouseEvent event )
-	{
-		if ( !mIsEditable )
-			return false;
-		
-		return false;
-	}
-/*
-	bool Scene::keyDown( KeyEvent event )
-	{
-		char c		= event.getChar();
-		int	 code	= event.getCode();
-			
-		if ( event.isMetaDown() )
-		{
-			if ( c == 'o' )
-				open();
-			
-			else if ( c == 's' )
-				saveAs();
-		}
-
-		return false;
-	}
-*/
-	void Scene::open( string filename )
-	{
-		fs::path fsPath(filename);
-		
-		if ( fsPath == "" )
-		{
-			std::vector<std::string> extensions; extensions.push_back("xml");
-			fsPath = ci::app::getOpenFilePath( "", extensions );
-			
-			if ( fsPath == "" )
-				return;
-		}
-		loadCSVFile( fsPath.generic_string() );
-	}
-	
-	void Scene::saveAs( string filename )
-	{
-		fs::path fsPath(filename);
-		
-		if ( fsPath == "" )
-		{
-			std::vector<std::string> extensions; extensions.push_back("xml");
-			fsPath = ci::app::getSaveFilePath( "", extensions );
-			
-			if ( fsPath == "" )
-				return;
-		}
-		saveCSVFile( fsPath.generic_string() );
-	}
-	
-	/*
-	void Scene::loadMesh( string filename )
-	{
-		fs::path fsPath(filename);
-		
-		if ( fsPath == "" )
-		{
-			fsPath = getOpenFilePath();
-			
-			if ( fsPath == "" )
-				return;
-		}
-		TriMesh mesh;
-		ObjLoader loader( loadFile( fsPath ) );
-		loader.load( &mesh );
-		mVboMesh = new gl::VboMesh( mesh );
-	}
-	*/
-
-	void Scene::loadCSVFile( const string &filename )
-	{
-		clear();
-		
-		string line;
-		ifstream openFile( filename.c_str() );
-		
-		if ( openFile.is_open() )
-		{
-			while ( openFile.good() )
-			{
-				getline(openFile,line);
-				vector<string> splitValues;
-				boost::split( splitValues, line, boost::is_any_of(",") );
-				
-				Vec3f pos;
-				pos.x = boost::lexical_cast<float>(splitValues.at(0));
-				pos.y = boost::lexical_cast<float>(splitValues.at(1));
-				pos.z = -boost::lexical_cast<float>(splitValues.at(2));
-				pos /= 100;
-				
-				mFixtures.push_back( new Fixture(pos) );
-			}
-			openFile.close();
-		} 
-		else
-			console() << "Scene > Failed to load fixtures coordinates!" << endl;
-	}
-	
-	void Scene::saveCSVFile( const string &filename )
-	{		
-		Vec3f pos;
-		std::ofstream openFile( filename.c_str() );
-		for(int k=0; k < mFixtures.size(); k++)
-		{
-			pos = mFixtures[k]->getPos();
-			openFile << pos.x << "," << pos.y << "," << pos.z; 
-			if ( k < mFixtures.size() - 1 )
-				openFile << endl;
-		}
-		openFile.close();
-	}
-	
-	void Scene::clear()
-	{
-		for(int k=0; k < mFixtures.size(); k++)
-			delete mFixtures[k];
-		mFixtures.clear();
-	}
-	
-	void Scene::drawGrid(float size, float step)
-	{
-		gl::color( Colorf(0.2f, 0.2f, 0.2f) );
-		for(float i=-size;i<=size;i+=step) {
-			gl::drawLine( Vec3f(i, 0.0f, -size), Vec3f(i, 0.0f, size) );
-			gl::drawLine( Vec3f(-size, 0.0f, i), Vec3f(size, 0.0f, i) );
-		}
-	}
-	
+        /*
+        class Group {
+            
+            friend class Scene;
+            
+        public:
+            
+            Group( int groupID, std::vector<Fixture*> fixtures ) : mGroupID(groupID), mFixtures(fixtures)
+            {
+                // calc bounding box
+                if ( fixtures.empty() )
+                    return;
+                
+//                mValues = new float[mFixtures.size()];
+//                for(size_t k=0; k < fixtures.size(); k++)
+//                    mValues[k] = 0.0f;
+                
+                
+                ci::Vec3f lowerFrontRight   = fixtures[0]->mPos;
+                ci::Vec3f upperBackLeft     = fixtures[0]->mPos;
+                
+                Fixture *fixture;
+                
+                for( size_t k=1; k < fixtures.size(); k++ )
+                {
+                    fixture = fixtures[k];
+                    
+                    // X
+                    if ( fixture->mPos.x < lowerFrontRight.x )
+                        lowerFrontRight.x = fixture->mPos.x;
+                    
+                    if ( fixture->mPos.x > upperBackLeft.x )
+                        upperBackLeft.x = fixture->mPos.x;
+                    
+                    // Y
+                    if ( fixture->mPos.y < lowerFrontRight.y )
+                        lowerFrontRight.y = fixture->mPos.y;
+                    
+                    if ( fixture->mPos.y > upperBackLeft.y )
+                        upperBackLeft.y = fixture->mPos.y;
+                    
+                    // Z
+                    if ( fixture->mPos.z < lowerFrontRight.z )
+                        lowerFrontRight.z = fixture->mPos.z;
+                    
+                    if ( fixture->mPos.z > upperBackLeft.z )
+                        upperBackLeft.z = fixture->mPos.z;
+                }
+                
+                mBoundingBoxCenter  = upperBackLeft + ( lowerFrontRight - upperBackLeft  ) / 2.0f;
+                mBoundingBoxSize    = lowerFrontRight - upperBackLeft;
+            }
+            
+            void renderBoundingBox()
+            {
+                ci::gl::enableWireframe();
+                ci::gl::drawCube(mBoundingBoxCenter, mBoundingBoxSize );
+                ci::gl::disableWireframe();
+            }
+            
+            int getFixturesN() 
+            {
+                return mFixtures.size();
+            }
+            
+            void updateValues( float *values )
+            {
+                for( int k=0; k < mFixtures.size(); k++ )
+                    mFixtures[k]->mVal = values[k];
+            }
+            
+            int getID() { return mGroupID; }
+            
+        protected:
+            
+            int                                 mGroupID;
+            std::vector<Fixture*>               mFixtures;
+            ci::Vec3f                           mBoundingBoxCenter;
+            ci::Vec3f                           mBoundingBoxSize;
+        };
+        
+        */
+        
+        
+        Scene::Scene( int sceneID, const string &fixturesCoords, bool flipZ, const string &fixtureMesh, const string &venueMesh ) : mSceneID( sceneID ), mFixtureMesh(NULL), mVenueMesh(NULL)
+        {
+            loadFixtureMesh( fixtureMesh );
+            
+            loadVenueMesh( venueMesh );
+            
+            importFixturesFile( fixturesCoords, flipZ );    
+        }
+        
+        
+        void Scene::render()
+        {
+            // render venue
+            if ( mVenueMesh )
+            {
+                gl::color( ColorA( 1.0f, 1.0f, 1.0f, 0.2f ) );
+                gl::draw( *mVenueMesh );
+                gl::color( Color::white() );
+            }
+            
+            // render fixtures
+            if ( mFixtureMesh )
+            {                
+                // optimise this shit, draw as vbo!!!     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+                for( size_t i=0; i < mFixtures.size(); i++ )
+                {
+                    gl::color( ColorA( 0.9f, 0.21f, 0.34f, mFixtures[i]->mValue ) );
+                    gl::pushMatrices();
+                    gl::translate(mFixtures[i]->mPos);
+                    gl::draw( *mFixtureMesh );
+                    gl::popMatrices();
+                }
+            }
+        
+        }
+        
+        
+        void Scene::loadFixtureMesh( const std::string &filename )
+        {
+            if ( mFixtureMesh )
+                delete mFixtureMesh;
+            
+            mFixtureMesh = NULL;
+            
+            ObjLoader loader( (DataSourceRef)loadResource(filename) );
+            TriMesh	mesh; 
+            loader.load( &mesh );
+            mFixtureMesh = new gl::VboMesh( mesh );   
+        }
+        
+        
+        void Scene::loadVenueMesh( const std::string &filename )
+        {
+            if ( mVenueMesh )
+                delete mVenueMesh;
+            
+            mVenueMesh = NULL;
+            
+            ObjLoader loader( (DataSourceRef)loadResource(filename) );
+            TriMesh	mesh; 
+            loader.load( &mesh );
+            mVenueMesh = new gl::VboMesh( mesh );   
+        }
+        
+        
+        void Scene::importFixturesFile( const string &filename, bool flipZ )
+        {            
+            ifstream openFile( filename.c_str() );
+            
+            float       scale       = 1000.0f;
+            int         dmxChannel  = 0;
+            
+            ci::Vec3f   pos;
+            std::string line;
+            
+            if (openFile.is_open())
+            {
+                //                ci::app::console() << "Scene > loadFixtures " << filename << std::endl;
+                
+                while ( openFile.good() )
+                {
+                    getline(openFile,line);
+                    std::vector<std::string> splitValues;
+                    boost::split(splitValues, line, boost::is_any_of(","));						// get comma separated values
+                    
+                    if ( splitValues.size() != 4 )
+                        continue;
+                    
+                    pos.x = boost::lexical_cast<float>(splitValues.at(0));
+                    pos.y = boost::lexical_cast<float>(splitValues.at(1));
+                    pos.z = boost::lexical_cast<float>(splitValues.at(2));
+                    
+                    if ( flipZ ) pos.z *= -1;
+                    
+                    pos /= scale;
+                    
+                    dmxChannel = boost::lexical_cast<int>(splitValues.at(3));
+                    
+                    mFixtures.push_back( new Fixture(pos, dmxChannel) );
+                    
+                    //                    ci::app::console() << "Scene > Import fixture - DMX_" << dmxChannel << " " << pos << std::endl;
+                }
+                
+                //                ci::app::console() << "Scene > Imported " + ci::toString(mFixtures.size()) + " fixtures" << std::endl;
+                openFile.close();
+            } 
+            else 
+                ci::app::console() << "Scene > Failed to load fixtures coordinates: " << filename << std::endl;
+            
+        }
+    
 }
