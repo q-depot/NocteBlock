@@ -8,100 +8,142 @@
  *
  */
 
+#ifndef NOCTE_SCENE
+#define NOCTE_SCENE
+
 #pragma once
 
-//#include "cinder/App/App.h"
 #include "cinder/MayaCamUI.h"
 #include "cinder/gl/Vbo.h"
-//#include "cinder/ObjLoader.h"
-//
-//#include <boost/algorithm/string.hpp>
-//#include <boost/lexical_cast.hpp>
-//#include <fstream>
+#include "Fixture.h"
 
+namespace nocte {        
+        
 
-namespace nocte {
+    class Scene {
+    
+        friend class Stage;
+        
+    public:
+        
+        Scene( ci::app::App *app, const std::string &fixtureMesh, const std::string &venueMesh );
+        
+        Scene(  ci::app::App *app, const std::string &fixturesCoords, bool flipZ, const std::string &fixtureMesh, const std::string &venuMesh );
+        
+        ~Scene();
+        
+        void init( ci::app::App *app, const std::string &fixtureMesh, const std::string &venueMesh );
+        
+        void render();
+        
+        void update( float* values, float fadeIn, float fadeOut )
+        {	
+            for(int k=0; k < mFixtures.size(); k++) 
+                mFixtures[k]->update( values[k], fadeIn, fadeOut );
+        }
+        
+        int getFixturesN() { return mFixtures.size(); }
+        
+        Fixture* getFixture( int n ) { return mFixtures[n]; }
+        
+        std::vector<Fixture*> getFixtures() { return mFixtures; }
+        
+        void begin();
+        
+        void end();
+        
+        ci::MayaCamUI*  getMayaCam() { return mMayaCam; }
+        
+        ci::CameraPersp getCamera() { return mMayaCam->getCamera(); }
+        
+        void renderFrustum( ci::ColorA col = ci::ColorA::white() )
+        {
+            ci::gl::color( col );
+            ci::gl::drawFrustum( mMayaCam->getCamera() );
+            ci::gl::color( ci::Color::white() );
+        }   
+        
+        void toggleGrid() { mRenderGrid = !mRenderGrid; }
 
-        class Fixture {
+        void setGridColor( ci::ColorA col ) { mGridColor = col; }
+        
+        void addFixture( Fixture *fixture )         // temp method, this is to load subclass of Fixture
+        { 
+            fixture->setMesh(mFixtureMesh);
+            mFixtures.push_back( fixture );
+        } 
+
+        
+    protected:
+                
+        void importFixturesFile( const std::string &filename, bool flipZ );
+        
+        void loadFixtureMesh( const std::string &filename );
+        
+        void loadVenueMesh( const std::string &filename );
+        
+        void renderGrid( int steps=10, float size=1.0f )      // size in meters
+        {
+            ci::gl::color( mGridColor );
             
-            friend class Scene;
-            friend class Stage;
+            float halfLineLength = size * steps * 0.5f;     // half line length
             
+            for(float i=-halfLineLength; i<=halfLineLength; i+=size) {
+                ci::gl::drawLine( ci::Vec3f(i, 0.0f, -halfLineLength), ci::Vec3f(i, 0.0f, halfLineLength) );
+                ci::gl::drawLine( ci::Vec3f(-halfLineLength, 0.0f, i), ci::Vec3f(halfLineLength, 0.0f, i) );
+            }
             
-        public: 
-            
-            Fixture( ci::Vec3f pos, int dmxChannel ) : mPos(pos), mDMXChannel(dmxChannel), mValue(1.0f), mTargetValue(1.0f) {}
-            
-            void update( float val, float fadeInSpeed, float fadeOutSpeed )
+            ci::gl::drawCoordinateFrame();
+        }
+        
+        bool mouseDown( ci::app::MouseEvent event )
+        {
+            if( event.isAltDown() )
             {
-                mTargetValue = ci::math<float>::clamp(val, 0.0f, 1.0f);
-                
-                if ( mValue < mTargetValue ) 
-                    mValue = std::min(mValue + fadeInSpeed, mTargetValue);
-                else 
-                    mValue = std::max(mValue - fadeOutSpeed , mTargetValue);
-                
-          //      mBrightness = math<float>::clamp( mValue * gLiveMasterBrightness + gLiveBaseBrightness, 0.0f, 1.0f );
-                //	console() << "fixture " << mBrightness << " " <<  mValue << " " << gLiveMasterBrightness << " " << gLiveBaseBrightness << endl;
+                mMayaCam->mouseDown( event.getPos() );
+                return true;
             }
             
-            
-            ci::Vec3f   getPos() { return mPos; }
-            
-            ci::Vec2f	getPos2f() { return ci::Vec2f(mPos.x, mPos.z); }
-            
-            float getValue() { return mValue; }
-            
-        protected:
-            
-            ci::Vec3f   mPos;
-            int         mDMXChannel;
-            float       mValue;             // val normalised
-            float       mTargetValue;
-            
-        };
+            return false;
+        }
         
-        
-        class Scene {
-        
-            friend class Stage;
-            
-        public:
-            
-            Scene(  int sceneID, const std::string &fixturesCoords, bool flipZ, const std::string &fixtureMesh, const std::string &venuMesh );
-            
-            void render();
-            
-            void update( float *values, int buffSize, float fadeIn, float fadeOut )
-            {	
-                if ( buffSize != mFixtures.size() )
-                    return;
-                
-                for(int k=0; k < buffSize; k++) 
-                    mFixtures[k]->update( values[k], fadeIn, fadeOut );
+        bool mouseDrag( ci::app::MouseEvent event )
+        {
+            if( event.isAltDown() )
+            {
+                mMayaCam->mouseDrag( event.getPos(), event.isLeftDown(), event.isMiddleDown(), event.isRightDown() );
+                return true;
             }
-            
-            int getFixturesN() { return mFixtures.size(); }
-            
-            Fixture* getFixture( int n ) { return mFixtures[n]; }
-            
-            int  getId() { return mSceneID; };
-            
-        protected:
-            
-            void importFixturesFile( const std::string &filename, bool flipZ );
-            
-            void loadFixtureMesh( const std::string &filename );
-            
-            void loadVenueMesh( const std::string &filename );
-            
-        private:
-            
-            std::vector<Fixture*>       mFixtures;
-            ci::gl::VboMesh             *mFixtureMesh;
-            ci::gl::VboMesh             *mVenueMesh;
-            int                         mSceneID;
-            
-        };
+            return false;            
+        }
+        
+        bool resize( ci::app::ResizeEvent event )
+        {
+            ci::CameraPersp initialCam;
+            initialCam.setPerspective( 45.0f, ci::app::getWindowAspectRatio(), 0.1, 3000 );
+            mMayaCam->setCurrentCam( initialCam );
+            return true;
+        }
+
+    private:
+        
+        std::vector<Fixture*>       mFixtures;
+        ci::gl::VboMesh             *mFixtureMesh;
+        ci::gl::VboMesh             *mVenueMesh;
+        
+        ci::app::App                *mApp;
+        ci::CallbackId              mCbMouseDown, mCbMouseDrag, mCbResizeWindow;
+        ci::MayaCamUI               *mMayaCam;
+        bool                        mRenderGrid;
+        ci::ColorA                  mGridColor;
+
+    private:
+        // disallow
+        Scene(const Scene&);
+        Scene& operator=(const Scene&);
+        
+    };
 
 }
+
+#endif
