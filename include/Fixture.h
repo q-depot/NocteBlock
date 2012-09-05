@@ -61,11 +61,8 @@ namespace nocte {
             
             float getValue() { return mValue; }
             
-//            void addValue( float val )
-//            {
-//                mTargetValue = ci::math<float>::clamp( mTargetValue + val, 0.0f, 1.0f );
-//            }
-//            
+            int getChannel() { return mDMXChannel; }
+              
             void setMesh( ci::gl::VboMesh *mesh ) { mMesh = mesh; }
             
         protected:

@@ -10,6 +10,7 @@
 
 #include "cinder/App/App.h"
 #include "cinder/ObjLoader.h"
+#include "cinder/Utilities.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -62,9 +63,6 @@ namespace nocte {
         mMayaCam        = new ci::MayaCamUI( initialCam );
         
         mGridColor      = ci::ColorA(0.2f, 0.2f, 0.2f, 1.0f);
-        
-        console() << "init scene" << endl;
-
     }
     
     
@@ -192,8 +190,23 @@ namespace nocte {
         
     }
     
-    void Scene::end()
+    void Scene::end( bool renderLabels )
     {
+        if ( renderLabels )
+        {
+            Vec2f           screenPos;
+            CameraPersp     cam         = mMayaCam->getCamera();
+            Vec2f           windowSize  = getWindowSize();
+
+            gl::setMatricesWindow( windowSize );
+            
+            for( size_t k=0; k < mFixtures.size(); k++ )
+            {
+                screenPos = cam.worldToScreen ( mFixtures[k]->getPos(), windowSize.x, windowSize.y );
+                gl::drawString( toString( mFixtures[k]->getChannel() ), screenPos );
+            }
+        }
+        
         gl::popMatrices();
     }
     

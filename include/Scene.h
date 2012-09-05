@@ -50,7 +50,7 @@ namespace nocte {
         
         void begin();
         
-        void end();
+        void end( bool renderLabels = false );
         
         ci::MayaCamUI*  getMayaCam() { return mMayaCam; }
         
