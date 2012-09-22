@@ -3,7 +3,7 @@
  *	NocteBlock
  *
  *  Created by Andrea Cuius on 25/01/2011.
- *  Nocte Studio Copyright 2011 . All rights reserved.
+ *  Nocte Studio Copyright 2012 . All rights reserved.
  *	www.nocte.co.uk
  *
  */
@@ -36,7 +36,7 @@ namespace nocte {
         
         void render();
         
-        void update( float* values, float fadeIn, float fadeOut )
+        void update( float* values, float fadeIn = 1.0f, float fadeOut = 1.0f )
         {	
             for(int k=0; k < mFixtures.size(); k++) 
                 mFixtures[k]->update( values[k], fadeIn, fadeOut );
@@ -50,11 +50,17 @@ namespace nocte {
         
         void begin();
         
-        void end( bool renderLabels = false );
+        void end();
+        
+        void renderLabels();
+        
+        void renderValues();
         
         ci::MayaCamUI*  getMayaCam() { return mMayaCam; }
         
         ci::CameraPersp getCamera() { return mMayaCam->getCamera(); }
+        
+        void setCamera( ci::CameraPersp cam ) { mMayaCam->setCurrentCam( cam ); }
         
         void renderFrustum( ci::ColorA col = ci::ColorA::white() )
         {
@@ -67,12 +73,19 @@ namespace nocte {
 
         void setGridColor( ci::ColorA col ) { mGridColor = col; }
         
-        void addFixture( Fixture *fixture )         // temp method, this is to load subclass of Fixture
+        void addFixture( Fixture *fixture, bool setMesh = true )         // temp method, this is to load subclass of Fixture
         { 
-            fixture->setMesh(mFixtureMesh);
+            if ( setMesh )
+                fixture->setMesh(mFixtureMesh);
+
             mFixtures.push_back( fixture );
         } 
-
+        
+        void setFixtureValue( int idx, float val )
+        {
+            if ( idx < mFixtures.size() )
+                mFixtures[idx]->mValue = ci::math<float>::clamp( val, 0.0f, 1.0f );
+        }
         
     protected:
                 

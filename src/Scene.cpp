@@ -3,7 +3,7 @@
  *	NocteBlock
  *
  *  Created by Andrea Cuius on 25/01/2011.
- *  Nocte Studio Copyright 2011 . All rights reserved.
+ *  Nocte Studio Copyright 2012 . All rights reserved.
  *	www.nocte.co.uk
  *
  */
@@ -173,44 +173,47 @@ namespace nocte {
         
         // render fixtures
         for( size_t i=0; i < mFixtures.size(); i++ )
-            mFixtures[i]->render();
-        
-//        if ( mFixtureMesh )
-//        {                
-//            // optimise this shit, draw as vbo!!!     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-//            for( size_t i=0; i < mFixtures.size(); i++ )
-//            {
-//                gl::color( ColorA( 0.9f, 0.21f, 0.34f, mFixtures[i]->mValue ) );
-//                gl::pushMatrices();
-//                gl::translate(mFixtures[i]->mPos);
-//                gl::draw( *mFixtureMesh );
-//                gl::popMatrices();
-//            }
-//        }
-        
+            mFixtures[i]->render();       
     }
     
-    void Scene::end( bool renderLabels )
+    
+    void Scene::end()
     {
-        if ( renderLabels )
-        {
-            Vec2f           screenPos;
-            CameraPersp     cam         = mMayaCam->getCamera();
-            Vec2f           windowSize  = getWindowSize();
-
-            gl::setMatricesWindow( windowSize );
-            
-            for( size_t k=0; k < mFixtures.size(); k++ )
-            {
-                screenPos = cam.worldToScreen ( mFixtures[k]->getPos(), windowSize.x, windowSize.y );
-                gl::drawString( toString( mFixtures[k]->getChannel() ), screenPos );
-            }
-        }
-        
         gl::popMatrices();
     }
     
-
+    
+    void Scene::renderLabels()
+    {
+        Vec2f           screenPos;
+        CameraPersp     cam         = mMayaCam->getCamera();
+        Vec2f           windowSize  = getWindowSize();
+        
+        gl::setMatricesWindow( windowSize );
+        
+        for( size_t k=0; k < mFixtures.size(); k++ )
+        {
+            screenPos = cam.worldToScreen ( mFixtures[k]->getPos(), windowSize.x, windowSize.y );
+            gl::drawString( toString( mFixtures[k]->getChannel() ), screenPos );
+        }   
+    }
+    
+    
+    void Scene::renderValues()
+    {
+        Vec2f           screenPos;
+        CameraPersp     cam         = mMayaCam->getCamera();
+        Vec2f           windowSize  = getWindowSize();
+        
+        gl::setMatricesWindow( windowSize );
+        
+        for( size_t k=0; k < mFixtures.size(); k++ )
+        {
+            screenPos = cam.worldToScreen ( mFixtures[k]->getPos(), windowSize.x, windowSize.y );
+            gl::drawString( toString( mFixtures[k]->getValue() ), screenPos );
+        }  
+    }
+    
 }
 
 
