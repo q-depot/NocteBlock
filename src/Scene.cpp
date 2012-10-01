@@ -63,6 +63,8 @@ namespace nocte {
         mMayaCam        = new ci::MayaCamUI( initialCam );
         
         mGridColor      = ci::ColorA(0.2f, 0.2f, 0.2f, 1.0f);
+        mGridSteps      = 10;
+        mGridSize       = 1.0f;        
     }
     
     
@@ -161,7 +163,7 @@ namespace nocte {
         gl::setMatrices( mMayaCam->getCamera() );
         
         if ( mRenderGrid )
-            renderGrid();
+            renderGrid( mGridSteps, mGridSize );
         
         // render venue
         if ( mVenueMesh )

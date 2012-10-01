@@ -72,6 +72,7 @@ namespace nocte {
         void toggleGrid() { mRenderGrid = !mRenderGrid; }
 
         void setGridColor( ci::ColorA col ) { mGridColor = col; }
+        void setGridSize( int steps=10, float size=1.0f ) { mGridSteps = steps; mGridSize = size; }
         
         void addFixture( Fixture *fixture, bool setMesh = true )         // temp method, this is to load subclass of Fixture
         { 
@@ -149,7 +150,9 @@ namespace nocte {
         ci::MayaCamUI               *mMayaCam;
         bool                        mRenderGrid;
         ci::ColorA                  mGridColor;
-
+        int                         mGridSteps;
+        float                       mGridSize;
+        
     private:
         // disallow
         Scene(const Scene&);

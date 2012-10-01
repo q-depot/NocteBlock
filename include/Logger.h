@@ -37,14 +37,14 @@ public:
 	static void init() 
     {
         if ( APP_LOGS_PATH == "" )
-            APP_LOGS_PATH = "/";
-        
-        log( "-----------------------------------------------------" );
-        log( "=== LOGGERT INITIALISED! === " + getTodayDateTime() );
-        log( "-----------------------------------------------------" );
+            APP_LOGS_PATH = ci::app::App::getResourcePath().string();
         
 		// create Logs dir if it doesn't exist
 		ci::createDirectories(APP_LOGS_PATH);
+        
+        log( "-----------------------------------------------------" );
+        log( "=== LOGGER INITIALISED! === " + getTodayDateTime() );
+        log( "-----------------------------------------------------" );
         
 		// delete all the files older than KEEP_FOR_N_DAYS
 		boost::filesystem::directory_iterator end_itr;
@@ -64,7 +64,7 @@ public:
                 //	log( "delete log file: " + itr->leaf() );
 			}
 		}
-		
+        
 	};
 	
     
