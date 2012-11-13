@@ -63,6 +63,8 @@ namespace nocte {
         
         float getValue() { return mValue; }
         
+        float getTargetValue() { return mTargetValue; }
+        
         int getChannel() { return mDMXChannel; }
           
         void setMesh( ci::gl::VboMesh *mesh ) { mMesh = mesh; }

@@ -62,9 +62,13 @@ namespace nocte {
         initialCam.setPerspective( 45.0f, ci::app::getWindowAspectRatio(), 0.1, 3000 );
         mMayaCam        = new ci::MayaCamUI( initialCam );
         
-        mGridColor      = ci::ColorA(0.2f, 0.2f, 0.2f, 1.0f);
         mGridSteps      = 10;
-        mGridSize       = 1.0f;        
+        mGridSize       = 1.0f;
+        
+        mGridColor      = ci::ColorA(0.2f, 0.2f, 0.2f, 1.0f);
+        mFixtureColor   = ci::ColorA( 0.8f, 0.2f, 0.3f, 1.0f );
+        mVenueColor     = ci::ColorA( 1.0f, 1.0f, 1.0f, 0.6f );
+        
     }
     
     
@@ -156,26 +160,38 @@ namespace nocte {
     }
         
     
-    void Scene::begin()
+    void Scene::begin( bool drawWireframe )
     {
         gl::pushMatrices();
         
         gl::setMatrices( mMayaCam->getCamera() );
         
         if ( mRenderGrid )
+        {
+            gl::color( mGridColor );
             renderGrid( mGridSteps, mGridSize );
+        }
         
         // render venue
         if ( mVenueMesh )
         {
-            gl::color( ColorA( 1.0f, 1.0f, 1.0f, 0.2f ) );
+            gl::color( mVenueColor );
             gl::draw( *mVenueMesh );
-            gl::color( Color::white() );
+            
+            if ( drawWireframe )
+            {
+                gl::enableWireframe();
+                gl::draw( *mVenueMesh );
+                gl::disableWireframe();
+            }
         }
         
         // render fixtures
+        ci::gl::color( mFixtureColor );
         for( size_t i=0; i < mFixtures.size(); i++ )
-            mFixtures[i]->render();       
+            mFixtures[i]->render();
+        
+        ci::gl::color( ci::Color::white() );
     }
     
     

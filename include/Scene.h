@@ -48,7 +48,7 @@ namespace nocte {
         
         std::vector<Fixture*> getFixtures() { return mFixtures; }
         
-        void begin();
+        void begin( bool drawWireframe = false );
         
         void end();
         
@@ -71,8 +71,11 @@ namespace nocte {
         
         void toggleGrid() { mRenderGrid = !mRenderGrid; }
 
-        void setGridColor( ci::ColorA col ) { mGridColor = col; }
         void setGridSize( int steps=10, float size=1.0f ) { mGridSteps = steps; mGridSize = size; }
+        
+        void setGridColor( ci::ColorA col ) { mGridColor = col; }
+        void setFixtureColor( ci::ColorA col ) { mFixtureColor = col; }
+        void setVenueColor( ci::ColorA col ) { mVenueColor = col; }
         
         void addFixture( Fixture *fixture, bool setMesh = true )         // temp method, this is to load subclass of Fixture
         { 
@@ -133,9 +136,9 @@ namespace nocte {
         
         bool resize( ci::app::ResizeEvent event )
         {
-            ci::CameraPersp initialCam;
-            initialCam.setPerspective( 45.0f, ci::app::getWindowAspectRatio(), 0.1, 3000 );
-            mMayaCam->setCurrentCam( initialCam );
+            ci::CameraPersp cam = mMayaCam->getCamera();
+            cam.setPerspective( 45.0f, ci::app::getWindowAspectRatio(), 0.1, 3000 );
+            mMayaCam->setCurrentCam( cam );
             return true;
         }
 
@@ -149,9 +152,11 @@ namespace nocte {
         ci::CallbackId              mCbMouseDown, mCbMouseDrag, mCbResizeWindow;
         ci::MayaCamUI               *mMayaCam;
         bool                        mRenderGrid;
-        ci::ColorA                  mGridColor;
         int                         mGridSteps;
         float                       mGridSize;
+        ci::ColorA                  mGridColor;
+        ci::ColorA                  mFixtureColor;
+        ci::ColorA                  mVenueColor;
         
     private:
         // disallow
