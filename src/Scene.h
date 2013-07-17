@@ -26,13 +26,13 @@ namespace nocte {
         
     public:
         
-        Scene( ci::app::App *app, const std::string &fixtureMesh, const std::string &venueMesh );
+        Scene( ci::app::App *app, ci::fs::path fixturePath, ci::fs::path venuePath );
         
-        Scene(  ci::app::App *app, const std::string &fixturesCoords, bool flipZ, const std::string &fixtureMesh, const std::string &venuMesh );
+        Scene(  ci::app::App *app, ci::fs::path fixturesCoordsPath, bool flipZ, ci::fs::path fixturePath, ci::fs::path venuePath );
         
         ~Scene();
         
-        void init( ci::app::App *app, const std::string &fixtureMesh, const std::string &venueMesh );
+        void init( ci::app::App *app, ci::fs::path fixturePath, ci::fs::path venuePath );
         
         void render();
         
@@ -93,11 +93,11 @@ namespace nocte {
         
     protected:
                 
-        void importFixturesFile( const std::string &filename, bool flipZ );
+        void importFixturesFile( ci::fs::path filePath, bool flipZ );
         
-        void loadFixtureMesh( const std::string &filename );
+        void loadFixtureMesh( ci::fs::path filePath );
         
-        void loadVenueMesh( const std::string &filename );
+        void loadVenueMesh( ci::fs::path filePath );
         
         void renderGrid( int steps=10, float size=1.0f )      // size in meters
         {

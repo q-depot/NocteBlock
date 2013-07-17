@@ -28,21 +28,20 @@ using namespace std;
 
 namespace nocte {
 
-    
-    Scene::Scene( App *app, const string &fixtureMesh, const string &venueMesh ) : mApp(app)
+    Scene::Scene( App *app, fs::path fixturePath, fs::path venuePath ) : mApp(app)
     {
-        init( app, fixtureMesh, venueMesh ); 
+        init( app, fixturePath, venuePath );
     }
 
 
-    Scene::Scene( App *app, const string &fixturesCoords, bool flipZ, const string &fixtureMesh, const string &venueMesh )
+    Scene::Scene( App *app, fs::path fixturesCoordsPath, bool flipZ, fs::path  fixturePath, fs::path venuePath )
     {                   
-        init( app, fixtureMesh, venueMesh ); 
+        init( app, fixturePath, venuePath );
         
-        importFixturesFile( fixturesCoords, flipZ );
+        importFixturesFile( fixturesCoordsPath, flipZ );
     }
      
-    void Scene::init( App *app, const string &fixtureMesh, const string &venueMesh )
+    void Scene::init( App *app, fs::path fixturePath, fs::path venuePath )
     {
         mApp            = app;
         mFixtureMesh    = NULL;
@@ -50,9 +49,9 @@ namespace nocte {
         mRenderGrid     = true;
         mMayaCam        = NULL;
         
-        loadFixtureMesh( fixtureMesh );
+        loadFixtureMesh( fixturePath );
         
-        loadVenueMesh( venueMesh );
+        loadVenueMesh( venuePath );
         
         mCbMouseDown	= mApp->registerMouseDown(  this, &Scene::mouseDown );
         mCbMouseDrag	= mApp->registerMouseDrag(  this, &Scene::mouseDrag );
@@ -83,14 +82,14 @@ namespace nocte {
         delete mMayaCam;
     }
     
-    void Scene::loadFixtureMesh( const std::string &filename )
+    void Scene::loadFixtureMesh( fs::path filePath )
     {
         if ( mFixtureMesh )
             delete mFixtureMesh;
         
         mFixtureMesh = NULL;
         
-        ObjLoader loader( (DataSourceRef)loadResource(filename) );
+        ObjLoader loader( (DataSourceRef)loadFile( filePath ) );
         TriMesh	mesh; 
         loader.load( &mesh );
         mFixtureMesh = new gl::VboMesh( mesh ); 
@@ -100,23 +99,23 @@ namespace nocte {
     }
     
     
-    void Scene::loadVenueMesh( const std::string &filename )
+    void Scene::loadVenueMesh( fs::path filePath )
     {
         if ( mVenueMesh )
             delete mVenueMesh;
         
         mVenueMesh = NULL;
         
-        ObjLoader loader( (DataSourceRef)loadResource(filename) );
+        ObjLoader loader( (DataSourceRef)loadFile( filePath ) );
         TriMesh	mesh; 
         loader.load( &mesh );
         mVenueMesh = new gl::VboMesh( mesh );   
     }
     
     
-    void Scene::importFixturesFile( const string &filename, bool flipZ )
+    void Scene::importFixturesFile( fs::path filePath, bool flipZ )
     {
-        string fname = loadResource(filename)->getFilePath().generic_string();
+        string fname = filePath.generic_string();
         ifstream openFile( fname.c_str() );
         
         float       scale       = 1000.0f;
@@ -155,7 +154,7 @@ namespace nocte {
             openFile.close();
         } 
         else 
-            ci::app::console() << "Scene > Failed to load fixtures coordinates: " << filename << std::endl;
+            ci::app::console() << "Scene > Failed to load fixtures coordinates: " << filePath.generic_string() << std::endl;
         
     }
         
