@@ -28,22 +28,21 @@ using namespace std;
 
 namespace nocte {
 
-    Scene::Scene( App *app, fs::path fixturePath, fs::path venuePath ) : mApp(app)
+    Scene::Scene( fs::path fixturePath, fs::path venuePath )
     {
-        init( app, fixturePath, venuePath );
+        init( fixturePath, venuePath );
     }
 
 
-    Scene::Scene( App *app, fs::path fixturesCoordsPath, bool flipZ, fs::path  fixturePath, fs::path venuePath )
+    Scene::Scene( fs::path fixturesCoordsPath, bool flipZ, fs::path  fixturePath, fs::path venuePath )
     {                   
-        init( app, fixturePath, venuePath );
+        init( fixturePath, venuePath );
         
         importFixturesFile( fixturesCoordsPath, flipZ );
     }
      
-    void Scene::init( App *app, fs::path fixturePath, fs::path venuePath )
+    void Scene::init( fs::path fixturePath, fs::path venuePath )
     {
-        mApp            = app;
         mFixtureMesh    = NULL;
         mVenueMesh      = NULL;
         mRenderGrid     = true;
@@ -53,9 +52,10 @@ namespace nocte {
         
         loadVenueMesh( venuePath );
         
-        mCbMouseDown	= mApp->registerMouseDown(  this, &Scene::mouseDown );
-        mCbMouseDrag	= mApp->registerMouseDrag(  this, &Scene::mouseDrag );
-        mCbResizeWindow	= mApp->registerResize(     this, &Scene::resize );
+        ci::app::WindowRef window = app::App::get()->getWindow();
+        mCbMouseDown    = window->getSignalMouseDown().connect( std::bind( &Scene::mouseDown, this, std::_1 ) );
+        mCbMouseDrag    = window->getSignalMouseDrag().connect( std::bind( &Scene::mouseDrag, this, std::_1 ) );
+        mCbResize       = window->getSignalResize().connect( std::bind( &Scene::resize, this ) );
         
         ci::CameraPersp initialCam;
         initialCam.setPerspective( 45.0f, ci::app::getWindowAspectRatio(), 0.1, 3000 );

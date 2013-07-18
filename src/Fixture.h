@@ -18,7 +18,10 @@
 
 
 namespace nocte {
-
+    
+    class Fixture;
+    typedef std::shared_ptr<Fixture> FixtureRef;
+    
     class Fixture {
         
         friend class Scene;

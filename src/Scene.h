@@ -19,20 +19,29 @@
 
 namespace nocte {        
         
-
+    class Scene;
+    typedef std::shared_ptr<Scene>  SceneRef;
+    
+    
     class Scene {
     
         friend class Stage;
         
     public:
         
-        Scene( ci::app::App *app, ci::fs::path fixturePath, ci::fs::path venuePath );
+        static SceneRef create( ci::fs::path fixturePath, ci::fs::path venuePath )
+        {
+            return SceneRef( new Scene( fixturePath, venuePath ) );
+        }
         
-        Scene(  ci::app::App *app, ci::fs::path fixturesCoordsPath, bool flipZ, ci::fs::path fixturePath, ci::fs::path venuePath );
+        static SceneRef create( ci::fs::path fixturesCoordsPath, bool flipZ, ci::fs::path fixturePath, ci::fs::path venuePath )
+        {
+            return SceneRef( new Scene( fixturesCoordsPath, flipZ, fixturePath, venuePath ) );
+        }
         
         ~Scene();
         
-        void init( ci::app::App *app, ci::fs::path fixturePath, ci::fs::path venuePath );
+        void init( ci::fs::path fixturePath, ci::fs::path venuePath );
         
         void render();
         
@@ -92,7 +101,11 @@ namespace nocte {
         }
         
     protected:
-                
+        
+        Scene( ci::fs::path fixturePath, ci::fs::path venuePath );
+        
+        Scene( ci::fs::path fixturesCoordsPath, bool flipZ, ci::fs::path fixturePath, ci::fs::path venuePath );
+        
         void importFixturesFile( ci::fs::path filePath, bool flipZ );
         
         void loadFixtureMesh( ci::fs::path filePath );
@@ -134,7 +147,7 @@ namespace nocte {
             return false;            
         }
         
-        bool resize( ci::app::ResizeEvent event )
+        bool resize()
         {
             ci::CameraPersp cam = mMayaCam->getCamera();
             cam.setPerspective( 45.0f, ci::app::getWindowAspectRatio(), 0.1, 3000 );
@@ -148,8 +161,8 @@ namespace nocte {
         ci::gl::VboMesh             *mFixtureMesh;
         ci::gl::VboMesh             *mVenueMesh;
         
-        ci::app::App                *mApp;
-        ci::CallbackId              mCbMouseDown, mCbMouseDrag, mCbResizeWindow;
+        ci::signals::scoped_connection	mCbMouseDown, mCbMouseDrag, mCbResize;
+        
         ci::MayaCamUI               *mMayaCam;
         bool                        mRenderGrid;
         int                         mGridSteps;
