@@ -18,8 +18,6 @@
 
 #include "Scene.h"
 
-#include "Resources.h"
-
 
 using namespace ci;
 using namespace ci::app;
@@ -73,8 +71,6 @@ namespace nocte {
     
     Scene::~Scene() 
     {
-        for( size_t k=0; k < mFixtures.size(); k++ )
-            delete mFixtures[k];
         mFixtures.clear();
         
         delete mFixtureMesh;
@@ -145,12 +141,9 @@ namespace nocte {
                 
                 dmxChannel = boost::lexical_cast<int>(splitValues.at(3));
                 
-                mFixtures.push_back( new Fixture(pos, dmxChannel, mFixtureMesh) );
-                
-                //                    ci::app::console() << "Scene > Import fixture - DMX_" << dmxChannel << " " << pos << std::endl;
+                mFixtures.push_back( Fixture::create( pos, dmxChannel, mFixtureMesh ) );
             }
             
-            //                ci::app::console() << "Scene > Imported " + ci::toString(mFixtures.size()) + " fixtures" << std::endl;
             openFile.close();
         } 
         else 

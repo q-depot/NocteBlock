@@ -30,8 +30,10 @@ namespace nocte {
         
     public: 
         
-        Fixture( ci::Vec3f pos, int dmxChannel, ci::gl::VboMesh *mesh = NULL ) 
-        : mPos(pos), mDMXChannel(dmxChannel), mValue(0.0f), mTargetValue(0.0f), mMesh(mesh) {}
+        static FixtureRef create( ci::Vec3f pos, int dmxChannel, ci::gl::VboMesh *mesh = NULL )
+        {
+            return FixtureRef( new Fixture( pos, dmxChannel, mesh ) );
+        }
         
         ~Fixture() {}
         
@@ -79,6 +81,13 @@ namespace nocte {
             loader.load( &mesh );
             mMesh = new ci::gl::VboMesh( mesh );
         }
+        
+
+    protected:
+
+        Fixture( ci::Vec3f pos, int dmxChannel, ci::gl::VboMesh *mesh = NULL )
+        : mPos(pos), mDMXChannel(dmxChannel), mValue(0.0f), mTargetValue(0.0f), mMesh(mesh) {}
+
         
     protected:
         

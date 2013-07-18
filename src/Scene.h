@@ -45,17 +45,17 @@ namespace nocte {
         
         void render();
         
-        void update( float* values, float fadeIn = 1.0f, float fadeOut = 1.0f )
+        void update( std::shared_ptr<float> values, float fadeIn = 1.0f, float fadeOut = 1.0f )
         {	
             for(int k=0; k < mFixtures.size(); k++) 
-                mFixtures[k]->update( values[k], fadeIn, fadeOut );
+                mFixtures[k]->update( values.get()[k], fadeIn, fadeOut );
         }
         
         int getFixturesN() { return mFixtures.size(); }
         
-        Fixture* getFixture( int n ) { return mFixtures[n]; }
+        FixtureRef getFixture( int n ) { return mFixtures[n]; }
         
-        std::vector<Fixture*> getFixtures() { return mFixtures; }
+        std::vector<FixtureRef> getFixtures() { return mFixtures; }
         
         void begin( bool drawWireframe = false );
         
@@ -86,7 +86,7 @@ namespace nocte {
         void setFixtureColor( ci::ColorA col ) { mFixtureColor = col; }
         void setVenueColor( ci::ColorA col ) { mVenueColor = col; }
         
-        void addFixture( Fixture *fixture, bool setMesh = true )         // temp method, this is to load subclass of Fixture
+        void addFixture( FixtureRef fixture, bool setMesh = true )         // temp method, this is to load subclass of Fixture
         { 
             if ( setMesh )
                 fixture->setMesh(mFixtureMesh);
@@ -157,7 +157,7 @@ namespace nocte {
 
     private:
         
-        std::vector<Fixture*>       mFixtures;
+        std::vector<FixtureRef>     mFixtures;
         ci::gl::VboMesh             *mFixtureMesh;
         ci::gl::VboMesh             *mVenueMesh;
         
