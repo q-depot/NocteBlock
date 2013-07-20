@@ -2,7 +2,7 @@
  *  Fixture.h
  *	NocteBlock
  *
- *  Created by Andrea Cuius on 25/01/2011.
+ *  Created by Andrea Cuius
  *  Nocte Studio Copyright 2012 . All rights reserved.
  *	www.nocte.co.uk
  *
