@@ -16,6 +16,9 @@
 #include "cinder/gl/Vbo.h"
 #include "cinder/ObjLoader.h"
 
+#define MIN_LAMP_VALUE      0.0035  // min value norm -> 1.0f / 255 = 0.00392
+
+
 class Fixture;
 typedef std::shared_ptr<Fixture> FixtureRef;
 
@@ -43,8 +46,8 @@ public:
         else 
             mValue = std::max(mValue - fadeOutSpeed , mTargetValue);
         
-  //      mBrightness = math<float>::clamp( mValue * gLiveMasterBrightness + gLiveBaseBrightness, 0.0f, 1.0f );
-        //	console() << "fixture " << mBrightness << " " <<  mValue << " " << gLiveMasterBrightness << " " << gLiveBaseBrightness << endl;
+        //        if ( mValue < MIN_LAMP_VALUE )
+        //            mValue = 0.0f;
     }
     
     virtual void render() 
