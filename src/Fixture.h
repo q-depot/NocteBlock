@@ -17,7 +17,7 @@
 #include "cinder/ObjLoader.h"
 
 #define MIN_LAMP_VALUE      0.0035  // min value norm -> 1.0f / 255 = 0.00392
-
+#define FIXTURE_OFF_COLOR   ci::ColorA( 1.0f, 1.0f, 1.0f, 0.1f )
 
 class Fixture;
 typedef std::shared_ptr<Fixture> FixtureRef;
@@ -55,7 +55,11 @@ public:
         if ( !mMesh )
             return;
         
-        ci::gl::color( ci::ColorA( 0.9f, 0.21f, 0.34f, mValue ) );
+        if ( mValue > 0.0f )
+            ci::gl::color( ci::ColorA( 0.9f, 0.21f, 0.34f, mValue ) );
+        else
+            ci::gl::color( FIXTURE_OFF_COLOR );
+        
         ci::gl::pushMatrices();
         ci::gl::translate(mPos);
         ci::gl::draw( *mMesh );
