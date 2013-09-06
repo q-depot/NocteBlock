@@ -65,7 +65,6 @@ void Scene::init( fs::path fixturePath, fs::path venuePath )
     mGridColor      = ci::ColorA(0.2f, 0.2f, 0.2f, 1.0f);
     mFixtureColor   = ci::ColorA( 0.8f, 0.2f, 0.3f, 1.0f );
     mVenueColor     = ci::ColorA( 1.0f, 1.0f, 1.0f, 0.6f );
-    
 }
 
 
@@ -80,6 +79,8 @@ Scene::~Scene()
 
 void Scene::loadFixtureMesh( fs::path filePath )
 {
+    mFixtureObjPath = filePath;
+    
     if ( mFixtureMesh )
         delete mFixtureMesh;
     
@@ -97,6 +98,8 @@ void Scene::loadFixtureMesh( fs::path filePath )
 
 void Scene::loadVenueMesh( fs::path filePath )
 {
+    mVenueObjPath = filePath;
+    
     if ( mVenueMesh )
         delete mVenueMesh;
     
@@ -111,6 +114,8 @@ void Scene::loadVenueMesh( fs::path filePath )
 
 void Scene::importFixturesFile( fs::path filePath, bool flipZ )
 {
+    mFixtureCoordsPath = filePath;
+    
     string fname = filePath.generic_string();
     ifstream openFile( fname.c_str() );
     

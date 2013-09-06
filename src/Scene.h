@@ -98,6 +98,13 @@ public:
             mFixtures[idx]->mValue = ci::math<float>::clamp( val, 0.0f, 1.0f );
     }
     
+    ci::fs::path getVenueObjPath() { return mVenueObjPath; }
+    
+    ci::fs::path getFixtureObjPath() { return mFixtureObjPath; }
+    
+    ci::fs::path getFixtureCoordsPath() { return mFixtureCoordsPath; }
+    
+    
 protected:
     
     Scene( ci::fs::path fixturePath, ci::fs::path venuePath );
@@ -152,7 +159,8 @@ protected:
         mMayaCam->setCurrentCam( cam );
         return true;
     }
-
+    
+    
 private:
     
     std::vector<FixtureRef>     mFixtures;
@@ -168,11 +176,9 @@ private:
     ci::ColorA                  mGridColor;
     ci::ColorA                  mFixtureColor;
     ci::ColorA                  mVenueColor;
-    
-private:
-    // disallow
-    Scene(const Scene&);
-    Scene& operator=(const Scene&);
+    ci::fs::path                mVenueObjPath;
+    ci::fs::path                mFixtureObjPath;
+    ci::fs::path                mFixtureCoordsPath;
     
 };
 
