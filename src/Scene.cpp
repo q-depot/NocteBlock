@@ -18,12 +18,9 @@
 
 #include "Scene.h"
 
-
 using namespace ci;
 using namespace ci::app;
 using namespace std;
-
-
 
 
 Scene::Scene( fs::path fixturePath, fs::path venuePath )
@@ -51,8 +48,8 @@ void Scene::init( fs::path fixturePath, fs::path venuePath )
     loadVenueMesh( venuePath );
     
     ci::app::WindowRef window = app::App::get()->getWindow();
-    mCbMouseDown    = window->getSignalMouseDown().connect( std::bind( &Scene::mouseDown, this, std::_1 ) );
-    mCbMouseDrag    = window->getSignalMouseDrag().connect( std::bind( &Scene::mouseDrag, this, std::_1 ) );
+    mCbMouseDown    = window->getSignalMouseDown().connect( std::bind( &Scene::mouseDown, this, std::placeholders::_1 ) );
+    mCbMouseDrag    = window->getSignalMouseDrag().connect( std::bind( &Scene::mouseDrag, this, std::placeholders::_1 ) );
     mCbResize       = window->getSignalResize().connect( std::bind( &Scene::resize, this ) );
     
     ci::CameraPersp initialCam;
@@ -119,8 +116,8 @@ void Scene::importFixturesFile( fs::path filePath, bool flipZ )
     string fname = filePath.generic_string();
     ifstream openFile( fname.c_str() );
     
-    float       scale       = 1000.0f;
     int         dmxChannel  = 0;
+    int         c           = 0;
     
     ci::Vec3f   pos;
     std::string line;
@@ -133,8 +130,14 @@ void Scene::importFixturesFile( fs::path filePath, bool flipZ )
             std::vector<std::string> splitValues;
             boost::split(splitValues, line, boost::is_any_of(","));						// get comma separated values
             
-            if ( splitValues.size() != 4 )
+            if ( splitValues.size() < 3 )
+            {
+                console() << "Scene > Failed to parse fixtures file at line #" << c << endl;
+                
+                c++;
+
                 continue;
+            }
             
             pos.x = boost::lexical_cast<float>(splitValues.at(0));
             pos.y = boost::lexical_cast<float>(splitValues.at(1));
@@ -142,17 +145,19 @@ void Scene::importFixturesFile( fs::path filePath, bool flipZ )
             
             if ( flipZ ) pos.z *= -1;
             
-            pos /= scale;
-            
-            dmxChannel = boost::lexical_cast<int>(splitValues.at(3));
+//            pos /= scale;
+
+            dmxChannel = ( splitValues.size() == 4 ) ? boost::lexical_cast<int>(splitValues.at(3)) : 0;
             
             mFixtures.push_back( Fixture::create( pos, dmxChannel, mFixtureMesh ) );
+            
+            c++;
         }
         
         openFile.close();
     } 
-    else 
-        ci::app::console() << "Scene > Failed to load fixtures coordinates: " << filePath.generic_string() << std::endl;
+    else
+        console() << "Scene > Failed to load fixtures coordinates: " << filePath.generic_string() << endl;
     
 }
     
